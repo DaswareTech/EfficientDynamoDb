@@ -12,8 +12,8 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>dynamodb,nosql,dotnet,c#</PackageTags>
         <RepositoryUrl>https://github.com/AllocZero/EfficientDynamoDb</RepositoryUrl>
-        <Version>0.9.14-alpha.debos.1</Version>
-        <PackageVersion>0.9.14-alpha.debos.1</PackageVersion>
+        <Version>100.9.14</Version>
+        <PackageVersion>100.9.14-alpha</PackageVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
