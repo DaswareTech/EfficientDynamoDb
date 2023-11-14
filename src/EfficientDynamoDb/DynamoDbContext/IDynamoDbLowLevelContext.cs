@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using EfficientDynamoDb.DocumentModel;
@@ -16,6 +17,7 @@ namespace EfficientDynamoDb
 {
     public interface IDynamoDbLowLevelContext
     {
+        Task<Document?> GetDocumentFromStreamAsync(Stream stream, CancellationToken cancellationToken = default);
         Task<GetItemResponse> GetItemAsync(GetItemRequest request, CancellationToken cancellationToken = default);
         
         Task<BatchGetItemResponse> BatchGetItemAsync(BatchGetItemRequest request, CancellationToken cancellationToken = default);

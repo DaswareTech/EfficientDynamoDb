@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,5 +69,10 @@ namespace EfficientDynamoDb
 
         internal DynamoDbContextConfig Config =>
             throw new NotSupportedException($"All internal implementations of {nameof(IDynamoDbContext)} should overload Config property");
+
+        Task<List<TEntity>> GetItemsFromStreamAsync<TEntity>(Stream stream,
+            CancellationToken cancellationToken = default) where TEntity : class;
+
+        Task<TEntity?> GetItemFromStreamAsync<TEntity>(Stream stream, CancellationToken cancellationToken = default) where TEntity : class;
     }
 }

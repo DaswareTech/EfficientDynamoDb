@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -44,6 +45,13 @@ namespace EfficientDynamoDb
         {
             Api = api;
             Config = config;
+        }
+
+        public async Task<Document?> GetDocumentFromStreamAsync(Stream stream, CancellationToken cancellationToken = default)
+        { 
+            var result = await DdbJsonReader.ReadAsync(stream, GetItemParsingOptions.Instance, false, cancellationToken).ConfigureAwait(false);
+
+            return result.Value;
         }
 
         public async Task<GetItemResponse> GetItemAsync(GetItemRequest request, CancellationToken cancellationToken = default)

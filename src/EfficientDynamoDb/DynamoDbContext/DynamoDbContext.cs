@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,7 +9,9 @@ using EfficientDynamoDb.Exceptions;
 using EfficientDynamoDb.Internal;
 using EfficientDynamoDb.Internal.Converters.Json;
 using EfficientDynamoDb.Internal.Extensions;
+using EfficientDynamoDb.Internal.Operations.BatchGetItem;
 using EfficientDynamoDb.Internal.Reader;
+using EfficientDynamoDb.Operations.BatchGetItem;
 using static EfficientDynamoDb.DynamoDbLowLevelContext;
 
 namespace EfficientDynamoDb
@@ -44,7 +48,7 @@ namespace EfficientDynamoDb
         private async ValueTask<TResult> ReadAsync<TResult>(HttpResponseMessage response, CancellationToken cancellationToken = default) where TResult : class
         {
             await using var responseStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-
+            
             var expectedCrc = GetExpectedCrc(response);
             var classInfo = Config.Metadata.GetOrAddClassInfo(typeof(TResult), typeof(JsonObjectDdbConverter<TResult>));
             var result = await EntityDdbJsonReader.ReadAsync<TResult>(responseStream, classInfo, Config.Metadata, expectedCrc.HasValue, cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -53,6 +57,32 @@ namespace EfficientDynamoDb
                 throw new ChecksumMismatchException();
 
             return result.Value!;
+        }
+        
+        private async ValueTask<TResult> ReadFromStreamAsync<TResult>(Stream responseStream, CancellationToken cancellationToken = default) where TResult : class
+        {
+            var classInfo = Config.Metadata.GetOrAddClassInfo(typeof(TResult), typeof(JsonObjectDdbConverter<TResult>));
+            var result = await EntityDdbJsonReader.ReadAsync<TResult>(responseStream, classInfo, Config.Metadata, false, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            return result.Value!;
+        }
+        
+        public async Task<List<TEntity>> GetItemsFromStreamAsync<TEntity>(Stream stream, CancellationToken cancellationToken = default) where TEntity : class
+        {
+            var result = await ReadFromStreamAsync<BatchGetItemEntityResponse<TEntity>>(stream, cancellationToken).ConfigureAwait(false);
+            List<TEntity>? items = null;
+            if (result.Responses?.Count > 0)
+            {
+                foreach (var values in result.Responses.Values)
+                {
+                    if (items == null)
+                        items = values;
+                    else
+                        items.AddRange(values);
+                }
+            }
+
+            return items ?? new List<TEntity>();
         }
     }
 }

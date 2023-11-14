@@ -1,3 +1,4 @@
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using EfficientDynamoDb.Internal.Metadata;
@@ -29,6 +30,14 @@ namespace EfficientDynamoDb
 
             using var response = await Api.SendAsync(Config, httpContent, cancellationToken).ConfigureAwait(false);
             var result = await ReadAsync<GetItemEntityProjection<TEntity>>(response, cancellationToken).ConfigureAwait(false);
+
+            return result.Item;
+        }
+        
+        public async Task<TEntity?> GetItemFromStreamAsync<TEntity>(Stream stream, CancellationToken cancellationToken = default)
+            where TEntity : class
+        {
+            var result = await ReadFromStreamAsync<GetItemEntityProjection<TEntity>>(stream, cancellationToken).ConfigureAwait(false);
 
             return result.Item;
         }
